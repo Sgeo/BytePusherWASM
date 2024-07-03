@@ -6,26 +6,33 @@
         <meta name="viewport" content="width=device-width">
     </head>
     <body>
-        <canvas width="256" height="256"></canvas>
+        <div><button type="button" id="start">Start</button></div>
+        <div><canvas width="256" height="256"></canvas></div>
         <script type="module">
             import { BytePusher } from "./bytepusher.js";
-            const canvas = document.querySelector("canvas");
-            const ctx = canvas.getContext("2d");
-            window.bp = new BytePusher;
-            await bp.init();
-            let palette_test = await fetch("roms/Audio Test.BytePusher").then(r => r.arrayBuffer());
-            bp.load(palette_test);
-            let previousTime = document.timeline.currentTime;
-            requestAnimationFrame(function frame(time) {
-                requestAnimationFrame(frame);
-                if(time - previousTime >= 1000/60) {
-                    let numFrames = (time - previousTime)/(1000/60);
-                    for(let i = 0; i < numFrames; i++) {
-                        bp.frame(ctx);
+            document.querySelector("#start").addEventListener("click", async function() {
+                let audioCtx = new AudioContext({
+                    sampleRate: 256 * 60,
+                });
+                const canvas = document.querySelector("canvas");
+                const ctx = canvas.getContext("2d");
+                window.bp = new BytePusher;
+                await bp.init(audioCtx);
+                let palette_test = await fetch("roms/Audio Test.BytePusher").then(r => r.arrayBuffer());
+                bp.load(palette_test);
+                let previousTime = document.timeline.currentTime;
+                requestAnimationFrame(function frame(time) {
+                    requestAnimationFrame(frame);
+                    if(time - previousTime >= 1000/60) {
+                        let numFrames = (time - previousTime)/(1000/60);
+                        for(let i = 0; i < numFrames; i++) {
+                            bp.frame(ctx);
+                        }
+                        previousTime = time;
                     }
-                    previousTime = time;
-                }
+                });
             });
+
         </script>
     </body>
 </html>

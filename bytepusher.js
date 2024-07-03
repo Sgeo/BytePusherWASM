@@ -1,12 +1,10 @@
 class BytePusher {
-    async init() {
+    async init(audioCtx) {
         this._instance = await WebAssembly.instantiateStreaming(fetch("bytepusher.wasm")).then(wa => wa.instance);
         this._main = new Uint8Array(this._instance.exports.main.buffer);
         this._video = new Uint8Array(this._instance.exports.video.buffer);
         this._audio = new Float32Array(this._instance.exports.audio.buffer);
-        this._audioctx = new AudioContext({
-            sampleRate: 256 * 60,
-        });
+        this._audioctx = audioCtx;
         this._audioBuffer = this._audioctx.createBuffer(1, 256, 256 * 60);
     }
 
