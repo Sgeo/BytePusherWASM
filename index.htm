@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>BytePusher</title>
+        <meta name="viewport" content="width=device-width">
+    </head>
+    <body>
+        <canvas width="256" height="256"></canvas>
+        <script type="module">
+            import { BytePusher } from "./bytepusher.js";
+            const canvas = document.querySelector("canvas");
+            const ctx = canvas.getContext("2d");
+            window.bp = new BytePusher;
+            await bp.init();
+            let palette_test = await fetch("roms/Palette Test.BytePusher").then(r => r.arrayBuffer());
+            bp.load(palette_test);
+            setInterval(() => bp.frame(ctx), 1000/60);
+        </script>
+    </body>
+</html>
