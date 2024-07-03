@@ -4,3 +4,4 @@ Try on the web: https://sgeo.github.io/BytePusherWASM/
 ## Caveats
 * `requestAnimationFrame` is used without checking framerate, so it may not run correctly on non-60Hz monitors
 * Keyboard is not implemented yet.
+* Additional cleanup to make it easier to switch between programs would be nice
