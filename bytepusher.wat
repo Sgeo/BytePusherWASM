@@ -1,7 +1,7 @@
 (module
     (memory $main 257) ;; 16MiB + extra for programs that run off the end
     (memory $video 4) ;; Video data in ImageData format
-    (memory $audio 1) ;; TODO find correct size
+    (memory $audio 1) ;; Audio data as floats
 
     (export "main" (memory $main))
     (export "video" (memory $video))
@@ -62,6 +62,7 @@
             br_if $innerLoop
         )
         call $convertVideo
+        call $convertAudio
     )
 
     (func $convertVideo
@@ -140,6 +141,43 @@
 
         )
     )
+
+        (func $convertAudio
+            (local $i i32)
+            (local $audioAddr i32)
+            i32.const 6
+            i32.load8_u
+            i32.const 16
+            i32.shl
+            i32.const 7
+            i32.load8_u
+            i32.const 8
+            i32.shl
+            i32.or
+            local.set $audioAddr
+
+            (loop $convertLoop
+                local.get $i
+                i32.const 4
+                i32.mul
+                local.get $audioAddr
+                local.get $i
+                i32.or
+                i32.load8_s
+                f32.convert_i32_s
+                f32.const 256
+                f32.div
+                f32.store (memory $audio)
+
+                local.get $i
+                i32.const 1
+                i32.add
+                local.tee $i
+                i32.const 256
+                i32.lt_s
+                br_if $convertLoop
+            )
+        )
 
     (export "frame" (func $frame))
 )

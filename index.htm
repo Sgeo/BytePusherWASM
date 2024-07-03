@@ -13,9 +13,19 @@
             const ctx = canvas.getContext("2d");
             window.bp = new BytePusher;
             await bp.init();
-            let palette_test = await fetch("roms/Palette Test.BytePusher").then(r => r.arrayBuffer());
+            let palette_test = await fetch("roms/Audio Test.BytePusher").then(r => r.arrayBuffer());
             bp.load(palette_test);
-            setInterval(() => bp.frame(ctx), 1000/60);
+            let previousTime = document.timeline.currentTime;
+            requestAnimationFrame(function frame(time) {
+                requestAnimationFrame(frame);
+                if(time - previousTime >= 1000/60) {
+                    let numFrames = (time - previousTime)/(1000/60);
+                    for(let i = 0; i < numFrames; i++) {
+                        bp.frame(ctx);
+                    }
+                    previousTime = time;
+                }
+            });
         </script>
     </body>
 </html>
