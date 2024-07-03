@@ -6,11 +6,31 @@
         <meta name="viewport" content="width=device-width">
     </head>
     <body>
-        <div><button type="button" id="start">Start</button></div>
+        <div id="selector">
+            <ul>
+                <li><button type="button" data-url="roms/Palette Test.BytePusher">Palette Test by Javamannen</button></li>
+                <li><button type="button" data-url="roms/Scrolling Logo.BytePusher">Scrolling Logo by Javamannen</button></li>
+                <li><button type="button" data-url="roms/Munching_Squares.BytePusher">Munching Squares by zzo38</button></li>
+                <li><button type="button" data-url="roms/Audio Test.BytePusher">Audio Test by Javamannen</button></li>
+                <li><button type="button" data-url="roms/SineScroller.BytePusher">SineScroller by Javamannen</button></li>
+                <li><button type="button" data-url="roms/Sprites.BytePusher">Sprites by Javamannen</button></li>
+                <li><button type="button" data-url="roms/invertloopsine.BytePusher">"Invert Loop" sine by Ben Russell</button></li>
+                <li><button type="button" data-url="roms/nyan.bp">Nyan Cat by Nucular</button></li>
+            </ul>
+        </div>
         <div><canvas width="256" height="256"></canvas></div>
         <script type="module">
             import { BytePusher } from "./bytepusher.js";
-            document.querySelector("#start").addEventListener("click", async function() {
+            window.addEventListener("popstate", function(event) {
+                if(event.state === "playing") {
+                    window.location.reload();
+                }
+            });
+            document.querySelector("#selector").addEventListener("click", async function(event) {
+                if(!event.target.dataset.url) {
+                    return;
+                }
+                document.querySelector("#selector").style.display = "none";
                 let audioCtx = new AudioContext({
                     sampleRate: 256 * 60,
                 });
@@ -18,8 +38,9 @@
                 const ctx = canvas.getContext("2d");
                 window.bp = new BytePusher;
                 await bp.init(audioCtx);
-                let palette_test = await fetch("roms/Audio Test.BytePusher").then(r => r.arrayBuffer());
-                bp.load(palette_test);
+                let rom = await fetch(event.target.dataset.url).then(r => r.arrayBuffer());
+                bp.load(rom);
+                history.pushState("playing", "", null);
                 let previousTime = document.timeline.currentTime;
                 requestAnimationFrame(function frame(time) {
                     requestAnimationFrame(frame);
