@@ -6,6 +6,7 @@ class BytePusher {
         this._audio = new Float32Array(this._instance.exports.audio.buffer, 0, 256);
         this._audioctx = audioCtx;
         this._audioBuffer = this._audioctx.createBuffer(1, 256, 256 * 60);
+        this._audioBufferSourceNode = null;
     }
 
     load(arrayBuffer) {
@@ -23,10 +24,13 @@ class BytePusher {
         imageData.data.set(video);
         canvasCtx.putImageData(imageData, 0, 0);
         this._audioBuffer.getChannelData(0).set(audio);
-        let audioBufferSource = new AudioBufferSourceNode(this._audioctx);
-        audioBufferSource.buffer = this._audioBuffer;
-        audioBufferSource.connect(this._audioctx.destination);
-        audioBufferSource.start();
+        if(!this._audioBufferSourceNode) {
+            this._audioBufferSourceNode = new AudioBufferSourceNode(this._audioctx);
+            this._audioBufferSourceNode.loop = true;
+            this._audioBufferSourceNode.buffer = this._audioBuffer;
+            this._audioBufferSourceNode.connect(this._audioctx.destination);
+            this._audioBufferSourceNode.start();
+        }
     }
 }
 
