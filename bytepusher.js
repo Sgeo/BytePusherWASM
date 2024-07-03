@@ -21,7 +21,7 @@ class BytePusher {
         let {video, audio} = this.processFrame();
         let imageData = new ImageData(256, 256);
         imageData.data.set(this._video);
-        canvasCtx.putImageData(video, 0, 0);
+        canvasCtx.putImageData(imageData, 0, 0);
         this._audioBuffer.getChannelData(0).set(audio);
         let audioBufferSource = new AudioBufferSourceNode(this._audioctx);
         audioBufferSource.buffer = this._audioBuffer;
