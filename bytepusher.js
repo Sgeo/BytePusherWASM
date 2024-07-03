@@ -3,7 +3,7 @@ class BytePusher {
         this._instance = await WebAssembly.instantiateStreaming(fetch("bytepusher.wasm")).then(wa => wa.instance);
         this._main = new Uint8Array(this._instance.exports.main.buffer);
         this._video = new Uint8Array(this._instance.exports.video.buffer);
-        this._audio = new Float32Array(this._instance.exports.audio.buffer);
+        this._audio = new Float32Array(this._instance.exports.audio.buffer, 0, 256);
         this._audioctx = audioCtx;
         this._audioBuffer = this._audioctx.createBuffer(1, 256, 256 * 60);
     }
@@ -17,7 +17,7 @@ class BytePusher {
         let imageData = new ImageData(256, 256);
         imageData.data.set(this._video);
         canvasCtx.putImageData(imageData, 0, 0);
-        this._audioBuffer.getChannelData(0).set(this._audio.slice(0, 256));
+        this._audioBuffer.getChannelData(0).set(this._audio);
         let audioBufferSource = new AudioBufferSourceNode(this._audioctx);
         audioBufferSource.buffer = this._audioBuffer;
         audioBufferSource.connect(this._audioctx.destination);
