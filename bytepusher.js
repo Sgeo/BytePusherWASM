@@ -15,7 +15,7 @@ class BytePusher {
 
     processFrame() {
         this._instance.exports.frame();
-        return {video: this._video, audio: this._audio};
+        return {video: new Uint8Array(this._video), audio: new Float32Array(this._audio)};
     }
 
     frame(canvasCtx) {
