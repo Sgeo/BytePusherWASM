@@ -62,26 +62,15 @@ class BytePusher {
         return {video: new Uint8Array(this._video), audio: new Float32Array(this._audio)};
     }
 
-    renderFrame(canvasCtx, frame, renderedFunc) {
-        let now = performance.now();
-        let audioCurrentTime = this._audioctx.currentTime;
-        let videoFrameTimeFromNow = FRAME_TIME_MS - (now - this._prevVideoTime);
-        let audioFrameTimeFromAudioZero = FRAME_TIME_S + this._prevAudioTime;
+    renderFrame(canvasCtx, frame) {
         let {video, audio} = frame;
-        setTimeout(() => {
-            this._imageData.data.set(video);
-            canvasCtx.putImageData(this._imageData, 0, 0);
-            //this._prevVideoTime = performance.now();
-            //this._prevAudioTime = this._audioctx.currentTime;
-            renderedFunc();
-        }, videoFrameTimeFromNow);
+        this._imageData.data.set(video);
+        canvasCtx.putImageData(this._imageData, 0, 0);
         this._audioBuffer.getChannelData(0).set(audio);
         this._audioBufferSourceNode = new AudioBufferSourceNode(this._audioctx);
         this._audioBufferSourceNode.buffer = this._audioBuffer;
         this._audioBufferSourceNode.connect(this._audioctx.destination);
-        this._audioBufferSourceNode.start(audioFrameTimeFromAudioZero);
-        this._prevAudioTime = audioFrameTimeFromAudioZero
-        this._prevVideoTime = videoFrameTimeFromNow + now;
+        this._audioBufferSourceNode.start();
     }
 
     async keyboardLayout() {

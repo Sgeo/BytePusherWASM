@@ -75,7 +75,8 @@
                 function frameLoop() {
                     let start = performance.now();
                     let frame = bp.processFrame();
-                    bp.renderFrame(ctx, frame, frameLoop);
+                    bp.renderFrame(ctx, frame);
+                    setTimeout(frameLoop, 1000/60);
                 }
                 frameLoop();
             });
