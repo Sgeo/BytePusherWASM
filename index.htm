@@ -4,12 +4,20 @@
         <meta charset="utf-8">
         <title>BytePusher</title>
         <meta name="viewport" content="width=device-width">
+        <style>
+            #layout td {
+                font-family: monospace;
+                border-style: inset;
+            }
+
+        </style>
     </head>
     <body>
         <div id="selector">
             <ul>
                 <li><button type="button" data-url="roms/Palette Test.BytePusher">Palette Test by Javamannen</button></li>
                 <li><button type="button" data-url="roms/Scrolling Logo.BytePusher">Scrolling Logo by Javamannen</button></li>
+                <li><button type="button" data-url="roms/Keyboard Test.BytePusher">Keyboard Test by Javamannen</button></li>
                 <li><button type="button" data-url="roms/Munching_Squares.BytePusher">Munching Squares by zzo38</button></li>
                 <li><button type="button" data-url="roms/Audio Test.BytePusher">Audio Test by Javamannen</button></li>
                 <li><button type="button" data-url="roms/SineScroller.BytePusher">SineScroller by Javamannen</button></li>
@@ -20,6 +28,7 @@
         </div>
         <div><canvas width="256" height="256"></canvas></div>
         <div>Performance: <span id="performance">n/a</span> ms per frame</div>
+        <div><table id="layout"></table></div>
         <script type="module">
             import { BytePusher } from "./bytepusher.js";
             window.addEventListener("popstate", function(event) {
@@ -40,6 +49,22 @@
                 const ctx = canvas.getContext("2d");
                 window.bp = new BytePusher;
                 await bp.init(audioCtx);
+                document.body.addEventListener("keydown", (event) => {
+                    bp.keydown(event.code);
+                });
+                document.body.addEventListener("keyup", (event) => {
+                    bp.keyup(event.code);
+                });
+                bp.keyboardLayout().then(layout => {
+                    let layoutTable = document.querySelector("#layout");
+                    for(let row = 0; row < 4; row++) {
+                        let rowElem = layoutTable.insertRow();
+                        for(let column = 0; column < 4; column++) {
+                            let columnElem = rowElem.insertCell();
+                            columnElem.textContent = layout[4 * row + column];
+                        }
+                    }
+                });
                 let rom = await fetch(event.target.dataset.url).then(r => r.arrayBuffer());
                 bp.load(rom);
                 history.pushState("playing", "", null);
