@@ -19,6 +19,7 @@
             </ul>
         </div>
         <div><canvas width="256" height="256"></canvas></div>
+        <div>Performance: <span id="performance">n/a</span> ms per frame</div>
         <script type="module">
             import { BytePusher } from "./bytepusher.js";
             window.addEventListener("popstate", function(event) {
@@ -26,6 +27,7 @@
                     window.location.reload();
                 }
             });
+            const performanceSpan = document.querySelector("#performance");
             document.querySelector("#selector").addEventListener("click", async function(event) {
                 if(!event.target.dataset.url) {
                     return;
@@ -48,7 +50,10 @@
 //                        let numFrames = (time - previousTime)/(1000/60);
                         let numFrames = 1;
                         for(let i = 0; i < numFrames; i++) {
+                            let start = performance.now();
                             bp.frame(ctx);
+                            let time = performance.now() - start;
+                            performanceSpan.textContent = time;
                         }
                         previousTime = time;
                     }

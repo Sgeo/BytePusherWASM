@@ -24,13 +24,10 @@ class BytePusher {
         imageData.data.set(video);
         canvasCtx.putImageData(imageData, 0, 0);
         this._audioBuffer.getChannelData(0).set(audio);
-        if(!this._audioBufferSourceNode) {
-            this._audioBufferSourceNode = new AudioBufferSourceNode(this._audioctx);
-            this._audioBufferSourceNode.loop = true;
-            this._audioBufferSourceNode.buffer = this._audioBuffer;
-            this._audioBufferSourceNode.connect(this._audioctx.destination);
-            this._audioBufferSourceNode.start();
-        }
+        this._audioBufferSourceNode = new AudioBufferSourceNode(this._audioctx);
+        this._audioBufferSourceNode.buffer = this._audioBuffer;
+        this._audioBufferSourceNode.connect(this._audioctx.destination);
+        this._audioBufferSourceNode.start();
     }
 }
 
