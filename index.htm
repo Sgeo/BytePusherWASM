@@ -43,20 +43,12 @@
                 let rom = await fetch(event.target.dataset.url).then(r => r.arrayBuffer());
                 bp.load(rom);
                 history.pushState("playing", "", null);
-                let previousTime = document.timeline.currentTime;
                 requestAnimationFrame(function frame(time) {
                     requestAnimationFrame(frame);
-                    if(true) {
-//                        let numFrames = (time - previousTime)/(1000/60);
-                        let numFrames = 1;
-                        for(let i = 0; i < numFrames; i++) {
-                            let start = performance.now();
-                            bp.frame(ctx);
-                            let time = performance.now() - start;
-                            performanceSpan.textContent = time;
-                        }
-                        previousTime = time;
-                    }
+                    let start = performance.now();
+                    bp.frame(ctx);
+                    let perfTime = performance.now() - start;
+                    performanceSpan.textContent = perfTime;
                 });
             });
 
