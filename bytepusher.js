@@ -1,3 +1,6 @@
+const FRAME_TIME_MS = 1000/60;
+const FRAME_TIME_S = 1/60;
+
 const SPEC_KEYBOARD_LAYOUT = [
     0x1, 0x2, 0x3, 0xC,
     0x4, 0x5, 0x6, 0xD,
@@ -30,6 +33,8 @@ class BytePusher {
         this._audioBufferSourceNode = null;
         this._imageData = new ImageData(256, 256);
         this._keyboard = new DataView(this._instance.exports.main.buffer, 0, 2);
+        this._prevVideoTime = performance.now();
+        this._prevAudioTime = this._audioctx.currentTime;
     }
 
     keydown(code) {
@@ -57,15 +62,26 @@ class BytePusher {
         return {video: new Uint8Array(this._video), audio: new Float32Array(this._audio)};
     }
 
-    renderFrame(canvasCtx, frame) {
+    renderFrame(canvasCtx, frame, renderedFunc) {
+        let now = performance.now();
+        let audioCurrentTime = this._audioctx.currentTime;
+        let videoFrameTimeFromNow = FRAME_TIME_MS - (now - this._prevVideoTime);
+        let audioFrameTimeFromAudioZero = FRAME_TIME_S + this._prevAudioTime;
         let {video, audio} = frame;
-        this._imageData.data.set(video);
-        canvasCtx.putImageData(this._imageData, 0, 0);
+        setTimeout(() => {
+            this._imageData.data.set(video);
+            canvasCtx.putImageData(this._imageData, 0, 0);
+            //this._prevVideoTime = performance.now();
+            //this._prevAudioTime = this._audioctx.currentTime;
+            renderedFunc();
+        }, videoFrameTimeFromNow);
         this._audioBuffer.getChannelData(0).set(audio);
         this._audioBufferSourceNode = new AudioBufferSourceNode(this._audioctx);
         this._audioBufferSourceNode.buffer = this._audioBuffer;
         this._audioBufferSourceNode.connect(this._audioctx.destination);
-        this._audioBufferSourceNode.start();
+        this._audioBufferSourceNode.start(audioFrameTimeFromAudioZero);
+        this._prevAudioTime = audioFrameTimeFromAudioZero
+        this._prevVideoTime = videoFrameTimeFromNow + now;
     }
 
     async keyboardLayout() {
