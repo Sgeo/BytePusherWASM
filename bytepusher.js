@@ -57,8 +57,8 @@ class BytePusher {
         return {video: new Uint8Array(this._video), audio: new Float32Array(this._audio)};
     }
 
-    frame(canvasCtx) {
-        let {video, audio} = this.processFrame();
+    renderFrame(canvasCtx, frame) {
+        let {video, audio} = frame;
         this._imageData.data.set(video);
         canvasCtx.putImageData(this._imageData, 0, 0);
         this._audioBuffer.getChannelData(0).set(audio);
