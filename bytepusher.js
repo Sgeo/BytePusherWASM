@@ -73,7 +73,7 @@ class BytePusher {
             let map = await navigator.keyboard.getLayoutMap();
             return PHYSICAL_KEYBOARD_LAYOUT.map(key => map.get(key));
         } else {
-            return PHYSICAL_KEYBOARD_LAYOUT.map(key => key.substring.slice(-1));
+            return PHYSICAL_KEYBOARD_LAYOUT.map(key => key.slice(-1));
         }
     }
 }

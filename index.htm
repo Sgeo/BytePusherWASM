@@ -29,6 +29,7 @@
         <div><canvas width="256" height="256"></canvas></div>
         <div>Performance: <span id="performance">n/a</span> ms per frame</div>
         <div><table id="layout"></table></div>
+        <div><span id="layoutblurb"></span></div>
         <script type="module">
             import { BytePusher } from "./bytepusher.js";
             window.addEventListener("popstate", function(event) {
@@ -63,6 +64,9 @@
                             let columnElem = rowElem.insertCell();
                             columnElem.textContent = layout[4 * row + column];
                         }
+                    }
+                    if(!navigator?.keyboard?.getLayoutMap) {
+                        document.querySelector("#layoutblurb").textContent = "(Keyboard layout may not be accurate for your system. Keyboard Layout API not supported)";
                     }
                 });
                 let rom = await fetch(event.target.dataset.url).then(r => r.arrayBuffer());
