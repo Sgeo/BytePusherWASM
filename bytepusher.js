@@ -29,12 +29,12 @@ class BytePusher {
         this._video = new Uint8Array(this._instance.exports.video.buffer);
         this._audio = new Float32Array(this._instance.exports.audio.buffer, 0, 256);
         this._audioctx = audioCtx;
-        this._audioBuffer = this._audioctx.createBuffer(1, 256, 256 * 60);
-        this._audioBufferSourceNode = null;
         this._imageData = new ImageData(256, 256);
         this._keyboard = new DataView(this._instance.exports.main.buffer, 0, 2);
-        this._prevVideoTime = performance.now();
-        this._prevAudioTime = this._audioctx.currentTime;
+        await this._audioctx.audioWorklet.addModule("audio.js");
+        this._bytePusherAudioNode = new AudioWorkletNode(this._audioctx, "bytepusher-audio-processor");
+        this._bytePusherAudioNode.connect(this._audioctx.destination);
+        
     }
 
     keydown(code) {
@@ -66,11 +66,7 @@ class BytePusher {
         let {video, audio} = frame;
         this._imageData.data.set(video);
         canvasCtx.putImageData(this._imageData, 0, 0);
-        this._audioBuffer.getChannelData(0).set(audio);
-        this._audioBufferSourceNode = new AudioBufferSourceNode(this._audioctx);
-        this._audioBufferSourceNode.buffer = this._audioBuffer;
-        this._audioBufferSourceNode.connect(this._audioctx.destination);
-        this._audioBufferSourceNode.start();
+        this._bytePusherAudioNode.port.postMessage(audio);
     }
 
     async keyboardLayout() {

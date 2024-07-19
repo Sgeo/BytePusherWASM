@@ -72,6 +72,7 @@
                 let rom = await fetch(event.target.dataset.url).then(r => r.arrayBuffer());
                 bp.load(rom);
                 history.pushState("playing", "", null);
+                bp.renderFrame(ctx, bp.processFrame());
                 function frameLoop() {
                     let start = performance.now();
                     let frame = bp.processFrame();
