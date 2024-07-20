@@ -46,10 +46,11 @@
                 let audioCtx = new AudioContext({
                     sampleRate: 256 * 60,
                 });
+                let rom = await fetch(event.target.dataset.url).then(r => r.arrayBuffer());
                 const canvas = document.querySelector("canvas");
                 const ctx = canvas.getContext("2d");
                 window.bp = new BytePusher;
-                await bp.init(audioCtx);
+                await bp.init(audioCtx, rom);
                 document.body.addEventListener("keydown", (event) => {
                     bp.keydown(event.code);
                 });
@@ -69,16 +70,7 @@
                         document.querySelector("#layoutblurb").textContent = "(Keyboard layout may not be accurate for your system. Keyboard Layout API not supported)";
                     }
                 });
-                let rom = await fetch(event.target.dataset.url).then(r => r.arrayBuffer());
-                bp.load(rom);
                 history.pushState("playing", "", null);
-                function frameLoop() {
-                    let start = performance.now();
-                    let frame = bp.processFrame();
-                    bp.renderFrame(ctx, frame);
-                    setTimeout(frameLoop, 1000/60);
-                }
-                frameLoop();
             });
 
         </script>
