@@ -27,6 +27,10 @@ class BytePusher {
         this._module = await WebAssembly.compileStreaming(fetch("bytepusher.wasm"));
         this._audioctx = audioCtx;
         this._videoCtx = videoCtx;
+        if(!audioCtx.audioWorklet) {
+            alert("Audio worklets not supported!");
+            return;
+        }
         await audioCtx.audioWorklet.addModule("worklet.js");
         this._worklet = new AudioWorkletNode(audioCtx, "byte-pusher-processor", {
             numberOfInputs: 0,
