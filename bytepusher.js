@@ -23,55 +23,43 @@ for(let i = 0; i < 16; i++) {
 
 class BytePusher {
 
-    async init(audioCtx) {
-        this._instance = await WebAssembly.instantiateStreaming(fetch("bytepusher.wasm")).then(wa => wa.instance);
-        this._main = new Uint8Array(this._instance.exports.main.buffer);
-        this._video = new Uint8Array(this._instance.exports.video.buffer);
-        this._audio = new Float32Array(this._instance.exports.audio.buffer, 0, 256);
+    async init(audioCtx, videoCtx, rom) {
+        this._module = await WebAssembly.compileStreaming(fetch("bytepusher.wasm"));
         this._audioctx = audioCtx;
-        this._audioBuffer = this._audioctx.createBuffer(1, 256, 256 * 60);
-        this._audioBufferSourceNode = null;
-        this._imageData = new ImageData(256, 256);
-        this._keyboard = new DataView(this._instance.exports.main.buffer, 0, 2);
-        this._prevVideoTime = performance.now();
-        this._prevAudioTime = this._audioctx.currentTime;
-    }
-
-    keydown(code) {
-        let value = KEYMAP[code];
-        if(!value) return;
-        let io = this._keyboard.getUint16(0, false);
-        io = io | value;
-        this._keyboard.setUint16(0, io, false);
+        this._videoCtx = videoCtx;
+        if(!audioCtx.audioWorklet) {
+            alert("Audio worklets not supported!");
+            return;
+        }
+        await audioCtx.audioWorklet.addModule("worklet.js");
+        this._worklet = new AudioWorkletNode(audioCtx, "byte-pusher-processor", {
+            numberOfInputs: 0,
+            numberOfOutputs: 1,
+            outputChannelCount: [1],
+            processorOptions: {
+                data: rom,
+                module: this._module
+            }
+        });
+        this._worklet.port.onmessage = (e) => {
+            switch(e.data.type) {
+                case "video":
+                    let imageData = new ImageData(e.data.data, 256, 256);
+                    this._videoCtx.putImageData(imageData, 0, 0);
+                    break;
+            }
+        };
+        this._worklet.connect(audioCtx.destination);
     }
 
     keyup(code) {
-        let value = KEYMAP[code];
-        if(!value) return;
-        let io = this._keyboard.getUint16(0, false);
-        io = io & ~value;
-        this._keyboard.setUint16(0, io, false);
+        this._worklet.port.postMessage({type: "keyup", data: code});
     }
 
-    load(arrayBuffer) {
-        this._main.set(new Uint8Array(arrayBuffer));
+    keydown(code) {
+        this._worklet.port.postMessage({type: "keydown", data: code});
     }
 
-    processFrame() {
-        this._instance.exports.frame();
-        return {video: new Uint8Array(this._video), audio: new Float32Array(this._audio)};
-    }
-
-    renderFrame(canvasCtx, frame) {
-        let {video, audio} = frame;
-        this._imageData.data.set(video);
-        canvasCtx.putImageData(this._imageData, 0, 0);
-        this._audioBuffer.getChannelData(0).set(audio);
-        this._audioBufferSourceNode = new AudioBufferSourceNode(this._audioctx);
-        this._audioBufferSourceNode.buffer = this._audioBuffer;
-        this._audioBufferSourceNode.connect(this._audioctx.destination);
-        this._audioBufferSourceNode.start();
-    }
 
     async keyboardLayout() {
         if(navigator.keyboard && navigator.keyboard.getLayoutMap) {
