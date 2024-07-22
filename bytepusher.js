@@ -23,9 +23,10 @@ for(let i = 0; i < 16; i++) {
 
 class BytePusher {
 
-    async init(audioCtx, rom) {
+    async init(audioCtx, videoCtx, rom) {
         this._module = await WebAssembly.compileStreaming(fetch("bytepusher.wasm"));
         this._audioctx = audioCtx;
+        this._videoCtx = videoCtx;
         await audioCtx.audioWorklet.addModule("worklet.js");
         this._worklet = new AudioWorkletNode(audioCtx, "byte-pusher-processor", {
             numberOfInputs: 0,
@@ -36,30 +37,23 @@ class BytePusher {
                 module: this._module
             }
         });
+        this._worklet.port.onmessage = (e) => {
+            switch(e.data.type) {
+                case "video":
+                    let imageData = new ImageData(e.data.data, 256, 256);
+                    this._videoCtx.putImageData(imageData, 0, 0);
+                    break;
+            }
+        };
         this._worklet.connect(audioCtx.destination);
     }
 
-    keydown(code) {
-        let value = KEYMAP[code];
-        if(!value) return;
-        let io = this._keyboard.getUint16(0, false);
-        io = io | value;
-        this._keyboard.setUint16(0, io, false);
-    }
-
     keyup(code) {
-        let value = KEYMAP[code];
-        if(!value) return;
-        let io = this._keyboard.getUint16(0, false);
-        io = io & ~value;
-        this._keyboard.setUint16(0, io, false);
+        this._worklet.port.postMessage({type: "keyup", data: code});
     }
 
-    load(arrayBuffer) {
-       this._worklet.port.postMessage({
-        module: this._module,
-        data: arrayBuffer
-       });
+    keydown(code) {
+        this._worklet.port.postMessage({type: "keydown", data: code});
     }
 
 
