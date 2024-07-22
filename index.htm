@@ -27,7 +27,6 @@
             </ul>
         </div>
         <div><canvas width="256" height="256"></canvas></div>
-        <div>Performance: <span id="performance">n/a</span> ms per frame</div>
         <div><table id="layout"></table></div>
         <div><span id="layoutblurb"></span></div>
         <script type="module">
@@ -37,7 +36,6 @@
                     window.location.reload();
                 }
             });
-            const performanceSpan = document.querySelector("#performance");
             document.querySelector("#selector").addEventListener("click", async function(event) {
                 if(!event.target.dataset.url) {
                     return;
