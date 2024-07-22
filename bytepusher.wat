@@ -165,7 +165,7 @@
                 i32.or
                 i32.load8_s
                 f32.convert_i32_s
-                f32.const 256
+                f32.const 128
                 f32.div
                 f32.store (memory $audio)
 

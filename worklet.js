@@ -7,22 +7,18 @@ class BytePusherProcessor extends AudioWorkletProcessor {
             this.instance = instance;
             new Uint8Array(this.instance.exports.main.buffer).set(new Uint8Array(data));
             this.audio0 = new Float32Array(this.instance.exports.audio.buffer, 0, 128);
-            this.audio1 = new Float32Array(this.instance.exports.audio.buffer, 128, 128);
+            this.audio1 = new Float32Array(this.instance.exports.audio.buffer, 128 * Float32Array.BYTES_PER_ELEMENT, 128);
             this.audios = [];
             this.video = new Uint8Array(this.instance.exports.video.buffer);
-            this.firstRun = true;
+            // for(let i = 0; i < 1000; i++) {
+            //     this.frame();
+            // }
         });
     }
 
     process([input], [output], parameters) {
         if(!this.instance) {
             return true;
-        }
-        if(this.firstRun) {
-            this.firstRun = false;
-            for(let i = 0; i < 50; i++) {
-                this.frame();
-            }
         }
         if((currentFrame & 128) === 0) {
             this.frame();
