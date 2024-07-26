@@ -25,7 +25,7 @@ const MODULE = await WebAssembly.compileStreaming(fetch("bytepusher.wasm"));
 
 class BytePusher {
 
-    async init(audioCtx, videoCtx, rom) {
+    async init(audioCtx, videoCtx) {
         this._audioctx = audioCtx;
         this._videoCtx = videoCtx;
         if(!audioCtx.audioWorklet) {
@@ -49,8 +49,12 @@ class BytePusher {
                     break;
             }
         };
-        this._worklet.port.postMessage({type: "rom", data: rom});
+        
         this._worklet.connect(audioCtx.destination);
+    }
+
+    rom(rom) {
+        this._worklet.port.postMessage({type: "rom", data: rom});
     }
 
     keyup(code) {

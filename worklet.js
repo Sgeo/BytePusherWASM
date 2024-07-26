@@ -85,7 +85,12 @@ class BytePusherProcessor extends AudioWorkletProcessor {
     rom(rom) {
         this.tick = 0;
         this.audios = [];
-        new Uint8Array(this.instance.exports.main.buffer).set(new Uint8Array(rom));
+        let main = new Uint8Array(this.instance.exports.main.buffer);
+        main.fill(0);
+        main.set(new Uint8Array(rom));
+        this.audio0.fill(0.0);
+        this.audio1.fill(0.0);
+        this.video.fill(0);
         this.running = true;
     }
 
