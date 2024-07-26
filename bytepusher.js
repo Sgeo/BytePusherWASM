@@ -57,6 +57,14 @@ class BytePusher {
         this._worklet.port.postMessage({type: "rom", data: rom});
     }
 
+    pause() {
+        this._audioctx.suspend();
+    }
+
+    resume() {
+        this._audioctx.resume();
+    }
+
     keyup(code) {
         this._worklet.port.postMessage({type: "keyup", data: code});
     }
