@@ -18,14 +18,21 @@ for(let i = 0; i < 16; i++) {
     KEYMAP[PHYSICAL_KEYBOARD_LAYOUT[i]] = 1 << SPEC_KEYBOARD_LAYOUT[i];
 }
 
+// Test
+
 class BytePusherProcessor extends AudioWorkletProcessor {
 
     constructor(options) {
         super(options);
-        let { data, module } = options.processorOptions;
+        let { module } = options.processorOptions;
+        let messageBuffer = [];
+        this.port.onmessage = (e) => {
+            messageBuffer.push(e);
+        };
         WebAssembly.instantiate(module).then(instance => {
+            this.tick = 0;
+            this.running = false;
             this.instance = instance;
-            new Uint8Array(this.instance.exports.main.buffer).set(new Uint8Array(data));
             this.audio0 = new Float32Array(this.instance.exports.audio.buffer, 0, 128);
             this.audio1 = new Float32Array(this.instance.exports.audio.buffer, 128 * Float32Array.BYTES_PER_ELEMENT, 128);
             this.audios = [];
@@ -37,8 +44,14 @@ class BytePusherProcessor extends AudioWorkletProcessor {
                     case "keydown":
                         this[e.data.type](e.data.data);
                         break;
+                    case "rom":
+                        this.rom(e.data.data);
+                        break;
                 }
             };
+            for(let oldmessage of messageBuffer) {
+                this.port.onmessage(oldmessage);
+            }
         });
     }
 
@@ -46,7 +59,10 @@ class BytePusherProcessor extends AudioWorkletProcessor {
         if(!this.instance) {
             return true;
         }
-        if((currentFrame & 128) === 0) {
+        if(!this.running) {
+            return true;
+        }
+        if(this.tick === 0) {
             this.frame();
         }
         let audio = this.audios.shift();
@@ -55,6 +71,7 @@ class BytePusherProcessor extends AudioWorkletProcessor {
         } else {
             console.log("Underrun");
         }
+        this.tick = 1 - this.tick;
         return true;
     }
 
@@ -63,6 +80,13 @@ class BytePusherProcessor extends AudioWorkletProcessor {
         this.audios.push(this.audio0.slice());
         this.audios.push(this.audio1.slice());
         this.port.postMessage({type: "video", data: this.video});
+    }
+
+    rom(rom) {
+        this.tick = 0;
+        this.audios = [];
+        new Uint8Array(this.instance.exports.main.buffer).set(new Uint8Array(rom));
+        this.running = true;
     }
 
     keydown(code) {

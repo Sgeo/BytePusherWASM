@@ -21,24 +21,24 @@ for(let i = 0; i < 16; i++) {
     KEYMAP[PHYSICAL_KEYBOARD_LAYOUT[i]] = 1 << SPEC_KEYBOARD_LAYOUT[i];
 }
 
+const MODULE = await WebAssembly.compileStreaming(fetch("bytepusher.wasm"));
+
 class BytePusher {
 
     async init(audioCtx, videoCtx, rom) {
-        this._module = await WebAssembly.compileStreaming(fetch("bytepusher.wasm"));
         this._audioctx = audioCtx;
         this._videoCtx = videoCtx;
         if(!audioCtx.audioWorklet) {
             alert("Audio worklets not supported!");
             return;
         }
-        await audioCtx.audioWorklet.addModule("worklet.js");
+        await audioCtx.audioWorklet.addModule(`worklet.js?cachebust=${crypto.randomUUID()}`);
         this._worklet = new AudioWorkletNode(audioCtx, "byte-pusher-processor", {
             numberOfInputs: 0,
             numberOfOutputs: 1,
             outputChannelCount: [1],
             processorOptions: {
-                data: rom,
-                module: this._module
+                module: MODULE
             }
         });
         this._worklet.port.onmessage = (e) => {
@@ -49,6 +49,7 @@ class BytePusher {
                     break;
             }
         };
+        this._worklet.port.postMessage({type: "rom", data: rom});
         this._worklet.connect(audioCtx.destination);
     }
 
